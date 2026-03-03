@@ -20,6 +20,8 @@
 #include "main.h"
 #include "fonts.h"
 #include "ili9341.h"
+#include <stdio.h>
+#include <string.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -55,7 +57,10 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_SPI1_Init(void);
+//void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin);
 static void TFT_print(void);
+volatile uint32_t button_1_press_count = 0;
+volatile uint8_t button_pressed = 0;
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -82,7 +87,8 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-
+//  HAL_NVIC_SetPriority(EXTI9_5_IRQn, 0, 0);
+//  HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -100,14 +106,31 @@ int main(void)
   ILI9341_Unselect();
   ILI9341_Init();
   TFT_print();
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    /* USER CODE END WHILE */
-
+	if (button_pressed) {
+		button_pressed = 0;
+		if (button_1_press_count >= 6)
+		{
+			button_1_press_count = 0;
+		}
+		char buffer[8];
+		if (button_1_press_count == 0) {
+			ILI9341_WriteString(15, 180, "SPEED: OFF", Font_16x26, ILI9341_WHITE, ILI9341_BLACK);
+		}
+		else {
+			sprintf(buffer, "SPEED: %ld", button_1_press_count);
+			ILI9341_WriteString(15, 180, buffer, Font_16x26, ILI9341_WHITE, ILI9341_BLACK);
+			ILI9341_FillRectangle(143, 180, 100, 200, ILI9341_BLACK);
+		}
+		HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_8);
+	}
+	/* USER CODE END WHILE */
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -240,14 +263,16 @@ static void MX_USART2_UART_Init(void)
 static void TFT_print(void)
 {
 	ILI9341_FillScreen(ILI9341_BLACK);
-	ILI9341_WriteString(10, 10, "MODE:AUTO", Font_16x26, ILI9341_WHITE, ILI9341_BLACK);
+	ILI9341_WriteString(30, 120, "MODE : AUTO", Font_16x26, ILI9341_WHITE, ILI9341_BLACK);
+	ILI9341_WriteString(15, 180, "SPEED : OFF", Font_16x26, ILI9341_WHITE, ILI9341_BLACK);
 }
 
 static void MX_GPIO_Init(void)
 {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
   /* USER CODE BEGIN MX_GPIO_Init_1 */
-
+  HAL_NVIC_SetPriority(EXTI9_5_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
   /* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
@@ -263,7 +288,7 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6|GPIO_PIN_8, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : B1_Pin */
   GPIO_InitStruct.Pin = B1_Pin;
@@ -278,10 +303,10 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PA8 PA12 */
-  GPIO_InitStruct.Pin = GPIO_PIN_8|GPIO_PIN_12;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  /*Configure GPIO pin : PA8 */
+  GPIO_InitStruct.Pin = GPIO_PIN_8;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PA9 */
@@ -291,8 +316,14 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PB6 */
-  GPIO_InitStruct.Pin = GPIO_PIN_6;
+  /*Configure GPIO pin : PA12 */
+  GPIO_InitStruct.Pin = GPIO_PIN_12;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : PB6 PB8 */
+  GPIO_InitStruct.Pin = GPIO_PIN_6|GPIO_PIN_8;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -304,6 +335,23 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+	if(GPIO_Pin == GPIO_PIN_8)
+	{
+		static uint32_t prev = 0;
+		uint32_t curr = HAL_GetTick();
+
+		if (curr - prev > 300)
+		{
+			button_1_press_count++;
+			HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_8);
+			button_pressed = 1;
+			prev = curr;
+		}
+	}
+}
 
 /* USER CODE END 4 */
 
