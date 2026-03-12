@@ -1,7 +1,7 @@
 (kicad_sch
-	(version 20231120)
+	(version 20250114)
 	(generator "eeschema")
-	(generator_version "8.0")
+	(generator_version "9.0")
 	(uuid "460219a0-d789-4c93-a307-1d7e754647ed")
 	(paper "A4")
 	(title_block
@@ -10,14 +10,15 @@
 		(rev "1")
 	)
 	(lib_symbols
-		(symbol "Device:D"
-			(pin_numbers hide)
+		(symbol "Connector:Conn_01x02_Pin"
 			(pin_names
-				(offset 1.016) hide)
+				(offset 1.016)
+				(hide yes)
+			)
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
-			(property "Reference" "D"
+			(property "Reference" "J"
 				(at 0 2.54 0)
 				(effects
 					(font
@@ -25,8 +26,8 @@
 					)
 				)
 			)
-			(property "Value" "D"
-				(at 0 -2.54 0)
+			(property "Value" "Conn_01x02_Pin"
+				(at 0 -5.08 0)
 				(effects
 					(font
 						(size 1.27 1.27)
@@ -51,7 +52,7 @@
 					(hide yes)
 				)
 			)
-			(property "Description" "Diode"
+			(property "Description" "Generic connector, single row, 01x02, script generated"
 				(at 0 0 0)
 				(effects
 					(font
@@ -60,7 +61,15 @@
 					(hide yes)
 				)
 			)
-			(property "Sim.Device" "D"
+			(property "ki_locked" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "connector"
 				(at 0 0 0)
 				(effects
 					(font
@@ -69,7 +78,7 @@
 					(hide yes)
 				)
 			)
-			(property "Sim.Pins" "1=K 2=A"
+			(property "ki_fp_filters" "Connector*:*_1x??_*"
 				(at 0 0 0)
 				(effects
 					(font
@@ -78,31 +87,35 @@
 					(hide yes)
 				)
 			)
-			(property "ki_keywords" "diode"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
+			(symbol "Conn_01x02_Pin_1_1"
+				(rectangle
+					(start 0.8636 0.127)
+					(end 0 -0.127)
+					(stroke
+						(width 0.1524)
+						(type default)
 					)
-					(hide yes)
-				)
-			)
-			(property "ki_fp_filters" "TO-???* *_Diode_* *SingleDiode* D_*"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
+					(fill
+						(type outline)
 					)
-					(hide yes)
 				)
-			)
-			(symbol "D_0_1"
+				(rectangle
+					(start 0.8636 -2.413)
+					(end 0 -2.667)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
 				(polyline
 					(pts
-						(xy -1.27 1.27) (xy -1.27 -1.27)
+						(xy 1.27 0) (xy 0.8636 0)
 					)
 					(stroke
-						(width 0.254)
+						(width 0.1524)
 						(type default)
 					)
 					(fill
@@ -111,34 +124,20 @@
 				)
 				(polyline
 					(pts
-						(xy 1.27 0) (xy -1.27 0)
+						(xy 1.27 -2.54) (xy 0.8636 -2.54)
 					)
 					(stroke
-						(width 0)
+						(width 0.1524)
 						(type default)
 					)
 					(fill
 						(type none)
 					)
 				)
-				(polyline
-					(pts
-						(xy 1.27 1.27) (xy 1.27 -1.27) (xy -1.27 0) (xy 1.27 1.27)
-					)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-			)
-			(symbol "D_1_1"
 				(pin passive line
-					(at -3.81 0 0)
-					(length 2.54)
-					(name "K"
+					(at 5.08 0 180)
+					(length 3.81)
+					(name "Pin_1"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -154,9 +153,9 @@
 					)
 				)
 				(pin passive line
-					(at 3.81 0 180)
-					(length 2.54)
-					(name "A"
+					(at 5.08 -2.54 180)
+					(length 3.81)
+					(name "Pin_2"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -172,9 +171,12 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "Device:R"
-			(pin_numbers hide)
+			(pin_numbers
+				(hide yes)
+			)
 			(pin_names
 				(offset 0)
 			)
@@ -293,10 +295,13 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "Transistor_BJT:TIP120"
 			(pin_names
-				(offset 0) hide)
+				(offset 0)
+				(hide yes)
+			)
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
@@ -367,6 +372,18 @@
 				)
 			)
 			(symbol "TIP120_0_1"
+				(polyline
+					(pts
+						(xy -1.27 0) (xy -0.889 0)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
 				(circle
 					(center -0.762 0)
 					(radius 0.127)
@@ -380,7 +397,19 @@
 				)
 				(polyline
 					(pts
-						(xy -1.27 0) (xy -0.889 0)
+						(xy -0.254 2.032) (xy -0.254 0) (xy -0.254 0)
+					)
+					(stroke
+						(width 0.3048)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -0.254 1.27) (xy 0.762 2.286) (xy 2.54 2.286)
 					)
 					(stroke
 						(width 0)
@@ -392,8 +421,161 @@
 				)
 				(polyline
 					(pts
-						(xy 2.54 -2.032) (xy 2.54 -2.54)
+						(xy -0.254 1.016) (xy -0.762 1.016) (xy -0.762 -2.032)
 					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -0.254 0.762) (xy 0.762 -0.254) (xy 1.27 -0.254)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0.635 -0.127) (xy 0.381 0.381) (xy 0.127 0.127) (xy 0.635 -0.127)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0.762 -0.254) (xy 0.762 -2.032) (xy 1.143 -2.032) (xy 1.27 -1.778) (xy 1.397 -2.286) (xy 1.524 -1.778)
+						(xy 1.651 -2.286) (xy 1.778 -1.778) (xy 1.905 -2.286) (xy 2.032 -2.032) (xy 2.54 -2.032)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(circle
+					(center 0.762 -0.254)
+					(radius 0.127)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0.762 -2.032) (xy 0.381 -2.032) (xy 0.254 -2.286) (xy 0.127 -1.778) (xy 0 -2.286) (xy -0.127 -1.778)
+						(xy -0.254 -2.286) (xy -0.381 -1.778) (xy -0.508 -2.032) (xy -0.762 -2.032)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(circle
+					(center 0.762 -2.032)
+					(radius 0.127)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 1.27 0.762) (xy 1.27 -1.27) (xy 1.27 -1.27)
+					)
+					(stroke
+						(width 0.381)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 1.27 0) (xy 2.286 1.016) (xy 2.54 1.016) (xy 2.54 2.286)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(circle
+					(center 1.27 0)
+					(radius 3.175)
+					(stroke
+						(width 0.3556)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 1.27 -0.508) (xy 2.286 -1.524) (xy 2.54 -1.524) (xy 2.54 -2.032)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 2.159 -1.397) (xy 1.905 -0.889) (xy 1.651 -1.143) (xy 2.159 -1.397)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(circle
+					(center 2.54 2.286)
+					(radius 0.127)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(circle
+					(center 2.54 1.016)
+					(radius 0.127)
 					(stroke
 						(width 0)
 						(type default)
@@ -414,10 +596,9 @@
 						(type none)
 					)
 				)
-				(polyline
-					(pts
-						(xy 2.794 0.127) (xy 3.556 0.127)
-					)
+				(circle
+					(center 2.54 -1.524)
+					(radius 0.127)
 					(stroke
 						(width 0)
 						(type default)
@@ -428,7 +609,30 @@
 				)
 				(polyline
 					(pts
-						(xy 3.175 -0.635) (xy 3.175 -1.524)
+						(xy 2.54 -2.032) (xy 2.54 -2.54)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(circle
+					(center 2.54 -2.032)
+					(radius 0.127)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 2.794 0.127) (xy 3.556 0.127)
 					)
 					(stroke
 						(width 0)
@@ -464,114 +668,6 @@
 				)
 				(polyline
 					(pts
-						(xy -0.254 0.762) (xy 0.762 -0.254) (xy 1.27 -0.254)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -0.254 1.016) (xy -0.762 1.016) (xy -0.762 -2.032)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -0.254 1.27) (xy 0.762 2.286) (xy 2.54 2.286)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -0.254 2.032) (xy -0.254 0) (xy -0.254 0)
-					)
-					(stroke
-						(width 0.3048)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 1.27 0.762) (xy 1.27 -1.27) (xy 1.27 -1.27)
-					)
-					(stroke
-						(width 0.381)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0.635 -0.127) (xy 0.381 0.381) (xy 0.127 0.127) (xy 0.635 -0.127)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 1.27 -0.508) (xy 2.286 -1.524) (xy 2.54 -1.524) (xy 2.54 -2.032)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 1.27 0) (xy 2.286 1.016) (xy 2.54 1.016) (xy 2.54 2.286)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 2.159 -1.397) (xy 1.905 -0.889) (xy 1.651 -1.143) (xy 2.159 -1.397)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
 						(xy 3.175 0.127) (xy 2.794 -0.635) (xy 3.556 -0.635) (xy 3.175 0.127)
 					)
 					(stroke
@@ -584,99 +680,8 @@
 				)
 				(polyline
 					(pts
-						(xy 0.762 -2.032) (xy 0.381 -2.032) (xy 0.254 -2.286) (xy 0.127 -1.778) (xy 0 -2.286) (xy -0.127 -1.778)
-						(xy -0.254 -2.286) (xy -0.381 -1.778) (xy -0.508 -2.032) (xy -0.762 -2.032)
+						(xy 3.175 -0.635) (xy 3.175 -1.524)
 					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0.762 -0.254) (xy 0.762 -2.032) (xy 1.143 -2.032) (xy 1.27 -1.778) (xy 1.397 -2.286) (xy 1.524 -1.778)
-						(xy 1.651 -2.286) (xy 1.778 -1.778) (xy 1.905 -2.286) (xy 2.032 -2.032) (xy 2.54 -2.032)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(circle
-					(center 0.762 -2.032)
-					(radius 0.127)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(circle
-					(center 0.762 -0.254)
-					(radius 0.127)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(circle
-					(center 1.27 0)
-					(radius 3.175)
-					(stroke
-						(width 0.3556)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(circle
-					(center 2.54 -2.032)
-					(radius 0.127)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(circle
-					(center 2.54 -1.524)
-					(radius 0.127)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(circle
-					(center 2.54 1.016)
-					(radius 0.127)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(circle
-					(center 2.54 2.286)
-					(radius 0.127)
 					(stroke
 						(width 0)
 						(type default)
@@ -742,12 +747,17 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "power:+12V"
 			(power)
-			(pin_numbers hide)
+			(pin_numbers
+				(hide yes)
+			)
 			(pin_names
-				(offset 0) hide)
+				(offset 0)
+				(hide yes)
+			)
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
@@ -819,7 +829,7 @@
 				)
 				(polyline
 					(pts
-						(xy 0 0) (xy 0 2.54)
+						(xy 0 2.54) (xy 0.762 1.27)
 					)
 					(stroke
 						(width 0)
@@ -831,7 +841,7 @@
 				)
 				(polyline
 					(pts
-						(xy 0 2.54) (xy 0.762 1.27)
+						(xy 0 0) (xy 0 2.54)
 					)
 					(stroke
 						(width 0)
@@ -862,12 +872,17 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "power:GND"
 			(power)
-			(pin_numbers hide)
+			(pin_numbers
+				(hide yes)
+			)
 			(pin_names
-				(offset 0) hide)
+				(offset 0)
+				(hide yes)
+			)
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
@@ -958,6 +973,7 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 	)
 	(junction
@@ -967,10 +983,42 @@
 		(uuid "1460ba53-692b-42e1-8cdd-0f2b21d21516")
 	)
 	(junction
+		(at 215.9 102.87)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "57c52333-9c64-48b6-ac8b-709666a9a967")
+	)
+	(junction
 		(at 135.89 101.6)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "bcc05220-e274-4483-ad99-402d992a3479")
+	)
+	(junction
+		(at 237.49 97.79)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "bd584b1f-d3d5-4f19-80c8-ff5b0f93380f")
+	)
+	(wire
+		(pts
+			(xy 237.49 72.39) (xy 237.49 76.2)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "0a0d8d85-3301-4eb3-96a1-8be31456838c")
+	)
+	(wire
+		(pts
+			(xy 160.02 91.44) (xy 157.48 91.44)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "0cda2324-4e62-4ba6-a596-fda8d5cfe56d")
 	)
 	(wire
 		(pts
@@ -981,6 +1029,76 @@
 			(type default)
 		)
 		(uuid "0fe76a02-5030-467a-a05c-65c4e4a45aae")
+	)
+	(wire
+		(pts
+			(xy 215.9 115.57) (xy 215.9 120.65)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "21443990-1f1e-480c-9021-ec67dcf75bf8")
+	)
+	(wire
+		(pts
+			(xy 240.03 90.17) (xy 237.49 90.17)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "21d343ea-5051-4576-9370-321b52d85086")
+	)
+	(wire
+		(pts
+			(xy 240.03 92.71) (xy 237.49 92.71)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "2ed91594-3519-490e-ab19-464cb3f73e69")
+	)
+	(wire
+		(pts
+			(xy 208.28 102.87) (xy 215.9 102.87)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "359dbb6a-57ec-4ae0-8e39-ffe0e0e690ec")
+	)
+	(wire
+		(pts
+			(xy 223.52 107.95) (xy 229.87 107.95)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "380efe37-3319-4a0d-a0ea-f156bb42d31c")
+	)
+	(wire
+		(pts
+			(xy 160.02 88.9) (xy 157.48 88.9)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "4092a4fa-31b0-45ba-bb7d-de4ef4b4d3ca")
+	)
+	(wire
+		(pts
+			(xy 237.49 113.03) (xy 237.49 120.65)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "4ccead45-5a15-4df7-9616-de7d23e2503d")
 	)
 	(wire
 		(pts
@@ -1001,6 +1119,16 @@
 			(type default)
 		)
 		(uuid "6394da13-417e-4847-9967-c4d38e2308dd")
+	)
+	(wire
+		(pts
+			(xy 223.52 97.79) (xy 237.49 97.79)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "73921215-4a6b-4245-9399-0c7312c256d8")
 	)
 	(wire
 		(pts
@@ -1044,7 +1172,7 @@
 	)
 	(wire
 		(pts
-			(xy 157.48 82.55) (xy 157.48 86.36)
+			(xy 157.48 82.55) (xy 157.48 88.9)
 		)
 		(stroke
 			(width 0)
@@ -1064,6 +1192,46 @@
 	)
 	(wire
 		(pts
+			(xy 194.31 102.87) (xy 200.66 102.87)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "c078eaec-7fae-4df1-9d59-e271ca18f447")
+	)
+	(wire
+		(pts
+			(xy 237.49 92.71) (xy 237.49 97.79)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "cc4928b1-085e-45af-830c-28487e4542f8")
+	)
+	(wire
+		(pts
+			(xy 237.49 97.79) (xy 237.49 102.87)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "e07fddc3-a0ac-4865-acf4-f173d800701b")
+	)
+	(wire
+		(pts
+			(xy 215.9 102.87) (xy 215.9 107.95)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "e95f68f6-2713-465b-adcc-efa31e16d0d6")
+	)
+	(wire
+		(pts
 			(xy 128.27 101.6) (xy 135.89 101.6)
 		)
 		(stroke
@@ -1074,7 +1242,7 @@
 	)
 	(wire
 		(pts
-			(xy 157.48 93.98) (xy 157.48 96.52)
+			(xy 157.48 91.44) (xy 157.48 96.52)
 		)
 		(stroke
 			(width 0)
@@ -1082,114 +1250,37 @@
 		)
 		(uuid "f5be4f00-a6c4-4fd1-b938-856e0e9b6e2c")
 	)
-	(global_label "Pulse Input"
+	(wire
+		(pts
+			(xy 237.49 83.82) (xy 237.49 90.17)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "fdd36e41-9667-4bd4-9e69-08f7ba650bce")
+	)
+	(hierarchical_label "DRIVER_PWM_1"
 		(shape input)
 		(at 114.3 101.6 180)
-		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify right)
 		)
-		(uuid "60e24d61-06a0-424b-9978-ed621305016d")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 100.3688 101.6 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-				(hide yes)
-			)
-		)
+		(uuid "9ed1518f-6255-462a-9b4e-38ae43ff0844")
 	)
-	(symbol
-		(lib_id "Device:D")
-		(at 157.48 90.17 90)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "08ce08e6-d4f4-4087-b27d-5e9a241d0d64")
-		(property "Reference" "D1"
-			(at 160.02 88.8999 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
+	(hierarchical_label "DRIVER_PWM_2"
+		(shape input)
+		(at 194.31 102.87 180)
+		(effects
+			(font
+				(size 1.27 1.27)
 			)
+			(justify right)
 		)
-		(property "Value" "D"
-			(at 160.02 91.4399 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(property "Footprint" ""
-			(at 157.48 90.17 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 157.48 90.17 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Diode"
-			(at 157.48 90.17 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Sim.Device" "D"
-			(at 157.48 90.17 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Sim.Pins" "1=K 2=A"
-			(at 157.48 90.17 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "12558df0-96bd-4f07-ba95-d25ae1d07a8c")
-		)
-		(pin "2"
-			(uuid "7c73e999-ae79-4881-afa4-86b46d7d91da")
-		)
-		(instances
-			(project "rain sensor schematics"
-				(path "/1859d8e9-5630-4296-b583-fdd6ce8229ff/ba2eb884-de3a-4ca5-8666-11eb09eb6f18"
-					(reference "D1")
-					(unit 1)
-				)
-			)
-		)
+		(uuid "c079c5ea-8d97-43ba-aafc-0c0a26dd4e2e")
 	)
 	(symbol
 		(lib_id "power:+12V")
@@ -1323,6 +1414,75 @@
 	)
 	(symbol
 		(lib_id "Device:R")
+		(at 215.9 111.76 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "1dc248bb-b39d-4433-a573-6471ab4a0e29")
+		(property "Reference" "R7"
+			(at 218.44 110.4899 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "1k"
+			(at 218.44 113.0299 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0805_2012Metric"
+			(at 214.122 111.76 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 215.9 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 215.9 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "37bf9f3c-3c4a-41b5-9df9-4f8b00847dbd")
+		)
+		(pin "1"
+			(uuid "f8cedd3c-fb9a-4db5-b6d8-ebac469b156e")
+		)
+		(instances
+			(project "rain sensor schematics"
+				(path "/1859d8e9-5630-4296-b583-fdd6ce8229ff/ba2eb884-de3a-4ca5-8666-11eb09eb6f18"
+					(reference "R7")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
 		(at 135.89 110.49 0)
 		(unit 1)
 		(exclude_from_sim no)
@@ -1330,7 +1490,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "26522668-4671-4fd5-9427-7ab0042f0980")
-		(property "Reference" "R4"
+		(property "Reference" "R3"
 			(at 138.43 109.2199 0)
 			(effects
 				(font
@@ -1348,7 +1508,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0805_2012Metric"
 			(at 134.112 110.49 90)
 			(effects
 				(font
@@ -1384,7 +1544,221 @@
 		(instances
 			(project "rain sensor schematics"
 				(path "/1859d8e9-5630-4296-b583-fdd6ce8229ff/ba2eb884-de3a-4ca5-8666-11eb09eb6f18"
-					(reference "R4")
+					(reference "R3")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Transistor_BJT:TIP120")
+		(at 220.98 102.87 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "2caee6fe-3571-465d-97a6-0ad65d590042")
+		(property "Reference" "Q3"
+			(at 227.33 101.5999 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "TIP120"
+			(at 227.33 104.1399 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Package_TO_SOT_THT:TO-220-3_Horizontal_TabDown"
+			(at 226.06 104.775 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+					(italic yes)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "https://www.onsemi.com/pub/Collateral/TIP120-D.PDF"
+			(at 220.98 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Description" "5A Ic, 60V Vce, Silicon Darlington Power NPN Transistor, TO-220"
+			(at 220.98 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "e9bfacd4-014f-4f75-863c-9fed88db4f76")
+		)
+		(pin "2"
+			(uuid "352dcbee-0968-4d63-8693-5c0b47f9e7f6")
+		)
+		(pin "3"
+			(uuid "56e4f8ff-e400-4c6d-afb6-088e1723b631")
+		)
+		(instances
+			(project "rain sensor schematics"
+				(path "/1859d8e9-5630-4296-b583-fdd6ce8229ff/ba2eb884-de3a-4ca5-8666-11eb09eb6f18"
+					(reference "Q3")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 237.49 80.01 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "66e2f36e-65e3-4d6b-a32a-1db51652fdb7")
+		(property "Reference" "R8"
+			(at 240.03 78.7399 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "15"
+			(at 240.03 81.2799 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0805_2012Metric"
+			(at 235.712 80.01 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 237.49 80.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 237.49 80.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "0f5b4700-e317-4c20-b41f-dec4548c6ec7")
+		)
+		(pin "2"
+			(uuid "5ea0760d-b563-49b9-bbfc-44da367c8af6")
+		)
+		(instances
+			(project "rain sensor schematics"
+				(path "/1859d8e9-5630-4296-b583-fdd6ce8229ff/ba2eb884-de3a-4ca5-8666-11eb09eb6f18"
+					(reference "R8")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:Conn_01x02_Pin")
+		(at 165.1 91.44 180)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "89da09c6-f730-4c2f-9cac-26791a80d879")
+		(property "Reference" "J2"
+			(at 166.37 88.8999 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Value" "Conn_01x02_Pin"
+			(at 166.37 91.4399 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Horizontal"
+			(at 165.1 91.44 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 165.1 91.44 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Generic connector, single row, 01x02, script generated"
+			(at 165.1 91.44 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "54fac9f1-7c05-425a-a5ab-d58909ced9b8")
+		)
+		(pin "1"
+			(uuid "e26bbd67-4c40-4cef-8d96-26d34fb13c07")
+		)
+		(instances
+			(project ""
+				(path "/1859d8e9-5630-4296-b583-fdd6ce8229ff/ba2eb884-de3a-4ca5-8666-11eb09eb6f18"
+					(reference "J2")
 					(unit 1)
 				)
 			)
@@ -1399,7 +1773,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "924cfa66-a78e-444e-bba7-329f379bf4cf")
-		(property "Reference" "Q2"
+		(property "Reference" "Q1"
 			(at 147.32 100.3299 0)
 			(effects
 				(font
@@ -1417,7 +1791,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Package_TO_SOT_THT:TO-220-3_Vertical"
+		(property "Footprint" "Package_TO_SOT_THT:TO-220-3_Horizontal_TabDown"
 			(at 146.05 103.505 0)
 			(effects
 				(font
@@ -1459,7 +1833,209 @@
 		(instances
 			(project "rain sensor schematics"
 				(path "/1859d8e9-5630-4296-b583-fdd6ce8229ff/ba2eb884-de3a-4ca5-8666-11eb09eb6f18"
-					(reference "Q2")
+					(reference "Q1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 204.47 102.87 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "c183e8c1-72b0-42b8-8ee3-c9f130ca58e8")
+		(property "Reference" "R6"
+			(at 204.47 96.52 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "1k"
+			(at 204.47 99.06 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0805_2012Metric"
+			(at 204.47 104.648 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 204.47 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 204.47 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "ad859526-21cc-4a7e-82ee-cb821b686da3")
+		)
+		(pin "2"
+			(uuid "7a8a19ba-81ac-4d6d-8cf0-0768afcc772a")
+		)
+		(instances
+			(project "rain sensor schematics"
+				(path "/1859d8e9-5630-4296-b583-fdd6ce8229ff/ba2eb884-de3a-4ca5-8666-11eb09eb6f18"
+					(reference "R6")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:Conn_01x02_Pin")
+		(at 245.11 92.71 180)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "c9f28515-b2df-4371-8105-171edc52e96d")
+		(property "Reference" "J1"
+			(at 246.38 90.1699 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Value" "Conn_01x02_Pin"
+			(at 246.38 92.7099 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Horizontal"
+			(at 245.11 92.71 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 245.11 92.71 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Generic connector, single row, 01x02, script generated"
+			(at 245.11 92.71 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "7862a2a8-5acb-46af-9117-f2e7ff8f8dac")
+		)
+		(pin "1"
+			(uuid "8b832ca2-617f-4912-b1ba-bab25afa34c0")
+		)
+		(instances
+			(project "rain sensor schematics"
+				(path "/1859d8e9-5630-4296-b583-fdd6ce8229ff/ba2eb884-de3a-4ca5-8666-11eb09eb6f18"
+					(reference "J1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 215.9 120.65 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "ca899e64-def8-429c-b9cf-46467f2950d5")
+		(property "Reference" "#PWR01"
+			(at 215.9 127 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 215.9 125.73 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 215.9 120.65 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 215.9 120.65 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 215.9 120.65 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "c2663fbb-0f4d-4d49-9bc4-640f2336bc3b")
+		)
+		(instances
+			(project "rain sensor schematics"
+				(path "/1859d8e9-5630-4296-b583-fdd6ce8229ff/ba2eb884-de3a-4ca5-8666-11eb09eb6f18"
+					(reference "#PWR01")
 					(unit 1)
 				)
 			)
@@ -1539,7 +2115,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "e42c51f4-bd90-4e95-ae54-846a166064d5")
-		(property "Reference" "R2"
+		(property "Reference" "R1"
 			(at 160.02 77.4699 0)
 			(effects
 				(font
@@ -1557,7 +2133,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0805_2012Metric"
 			(at 155.702 78.74 90)
 			(effects
 				(font
@@ -1593,7 +2169,7 @@
 		(instances
 			(project "rain sensor schematics"
 				(path "/1859d8e9-5630-4296-b583-fdd6ce8229ff/ba2eb884-de3a-4ca5-8666-11eb09eb6f18"
-					(reference "R2")
+					(reference "R1")
 					(unit 1)
 				)
 			)
@@ -1608,7 +2184,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "ef9b19f6-2cd6-4e29-8832-d8595d2f5c0b")
-		(property "Reference" "Q1"
+		(property "Reference" "Q2"
 			(at 161.29 105.4099 0)
 			(effects
 				(font
@@ -1626,7 +2202,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Package_TO_SOT_THT:TO-220-3_Vertical"
+		(property "Footprint" "Package_TO_SOT_THT:TO-220-3_Horizontal_TabDown"
 			(at 160.02 108.585 0)
 			(effects
 				(font
@@ -1668,7 +2244,137 @@
 		(instances
 			(project "rain sensor schematics"
 				(path "/1859d8e9-5630-4296-b583-fdd6ce8229ff/ba2eb884-de3a-4ca5-8666-11eb09eb6f18"
-					(reference "Q1")
+					(reference "Q2")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:+12V")
+		(at 237.49 72.39 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "f819845b-5fdb-492c-a555-f02c79b4aa2e")
+		(property "Reference" "#PWR02"
+			(at 237.49 76.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "+12V"
+			(at 237.49 67.31 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 237.49 72.39 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 237.49 72.39 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"+12V\""
+			(at 237.49 72.39 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "fe4f0574-516e-4b2f-baf1-5ab3920315ec")
+		)
+		(instances
+			(project "rain sensor schematics"
+				(path "/1859d8e9-5630-4296-b583-fdd6ce8229ff/ba2eb884-de3a-4ca5-8666-11eb09eb6f18"
+					(reference "#PWR02")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 237.49 120.65 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "f96b9617-94f1-42a3-a451-7f49062ad191")
+		(property "Reference" "#PWR03"
+			(at 237.49 127 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 237.49 125.73 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 237.49 120.65 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 237.49 120.65 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 237.49 120.65 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "926c4540-e9f9-4387-8433-b897584f72d8")
+		)
+		(instances
+			(project "rain sensor schematics"
+				(path "/1859d8e9-5630-4296-b583-fdd6ce8229ff/ba2eb884-de3a-4ca5-8666-11eb09eb6f18"
+					(reference "#PWR03")
 					(unit 1)
 				)
 			)
@@ -1683,7 +2389,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "fa366628-a714-451f-ba2f-247d18afc98d")
-		(property "Reference" "R3"
+		(property "Reference" "R2"
 			(at 124.46 95.25 90)
 			(effects
 				(font
@@ -1699,7 +2405,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0805_2012Metric"
 			(at 124.46 103.378 90)
 			(effects
 				(font
@@ -1735,7 +2441,82 @@
 		(instances
 			(project "rain sensor schematics"
 				(path "/1859d8e9-5630-4296-b583-fdd6ce8229ff/ba2eb884-de3a-4ca5-8666-11eb09eb6f18"
-					(reference "R3")
+					(reference "R2")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Transistor_BJT:TIP120")
+		(at 234.95 107.95 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "fd5858c3-df45-4ac8-a53e-38ef24f2189e")
+		(property "Reference" "Q4"
+			(at 241.3 106.6799 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "TIP120"
+			(at 241.3 109.2199 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Package_TO_SOT_THT:TO-220-3_Horizontal_TabDown"
+			(at 240.03 109.855 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+					(italic yes)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "https://www.onsemi.com/pub/Collateral/TIP120-D.PDF"
+			(at 234.95 107.95 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Description" "5A Ic, 60V Vce, Silicon Darlington Power NPN Transistor, TO-220"
+			(at 234.95 107.95 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "7698a830-689d-40e2-8da5-89cc0082ef59")
+		)
+		(pin "3"
+			(uuid "dc68b75a-9f06-4bad-b037-2df0d34d1404")
+		)
+		(pin "1"
+			(uuid "7ac9fee5-faea-4172-b147-1ada1acacd66")
+		)
+		(instances
+			(project "rain sensor schematics"
+				(path "/1859d8e9-5630-4296-b583-fdd6ce8229ff/ba2eb884-de3a-4ca5-8666-11eb09eb6f18"
+					(reference "Q4")
 					(unit 1)
 				)
 			)
