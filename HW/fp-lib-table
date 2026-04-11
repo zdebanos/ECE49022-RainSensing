@@ -1,0 +1,4 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "ECE49022USER")(type "KiCad")(uri "${KIPRJMOD}/imported/FOOTPRINTS")(options "")(descr ""))
+)

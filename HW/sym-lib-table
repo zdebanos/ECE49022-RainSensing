@@ -1,0 +1,7 @@
+(sym_lib_table
+  (version 7)
+  (lib (name "BTS7020")(type "KiCad")(uri "${KIPRJMOD}/imported/SYMBOLS/BTS7020-2EPA.kicad_sym")(options "")(descr ""))
+  (lib (name "DRV8874")(type "KiCad")(uri "${KIPRJMOD}/imported/SYMBOLS/DRV8874PWPR.kicad_sym")(options "")(descr ""))
+  (lib (name "IFX007")(type "KiCad")(uri "${KIPRJMOD}/imported/SYMBOLS/IFX007TAUMA1.kicad_sym")(options "")(descr ""))
+  (lib (name "SN74AUP1G98")(type "KiCad")(uri "${KIPRJMOD}/imported/SYMBOLS/SN74AUP1G98.kicad_sym")(options "")(descr ""))
+)
