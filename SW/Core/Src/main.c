@@ -27,17 +27,24 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-enum mc_motor_speed
+enum mc_wipers_state
 {
-	MC_MS_NOTHING = 0,
-	MC_MS_SLOW,
-	MC_MS_FAST
+	WIPERS_OFF = 0,
+	WIPERS_ON,
+	WIPERS_REQUEST_STOP
+};
+
+enum mc_wiper_speed
+{
+	WIPERS_SLOW = 0,
+	WIPERS_MEDIUM,        /* Not implemented yet */
+	WIPERS_FAST
 };
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define PARK_AFTER_CHECK_TIME ((int)80) /* 8ms */
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -46,21 +53,21 @@ enum mc_motor_speed
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-TIM_HandleTypeDef htim2;
-
-UART_HandleTypeDef huart2;
+TIM_HandleTypeDef htim6;
+TIM_HandleTypeDef htim7;
 
 /* USER CODE BEGIN PV */
-atomic_int motor_speed   = MC_MS_NOTHING;
-_Atomic uint32_t g_timer = 0;
-uint8_t uart_data;
+atomic_bool g_park_rising_edge_fired;
+atomic_bool g_request_start;
+atomic_bool g_request_end;
+atomic_int  g_wipers_speed;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_USART2_UART_Init(void);
-static void MX_TIM2_Init(void);
+static void MX_TIM6_Init(void);
+static void MX_TIM7_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -70,42 +77,20 @@ static void MX_TIM2_Init(void);
 /* User Interrupts */
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
-	uint32_t tick = TIM2->CNT;
-
-	uint32_t diff;
-	if (tick >= g_timer) {
-		diff = tick - g_timer;
-	} else {
-		diff = g_timer - tick;
+	if (!atomic_load(&g_park_rising_edge_fired)) {
+		/* Set the flag if the interrupt still hasn't been triggered. */
+		atomic_store(&g_park_rising_edge_fired, true);
 	}
-
-	if (diff < 500) {
-		return;
-	}
-    atomic_store(&motor_speed, MC_MS_NOTHING);
 }
 
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-	if (huart->Instance == USART2) {
-		/* Commands are useful iff the motor is parked */
-		if (atomic_load(&motor_speed) == MC_MS_NOTHING) {
-			switch (uart_data) {
-			case 'f':  /* fast */
-				atomic_store(&g_timer, TIM2->CNT);
-				atomic_store(&motor_speed, MC_MS_FAST);
-				break;
-			case 's':  /* slow */
-				atomic_store(&g_timer, TIM2->CNT);
-				atomic_store(&motor_speed, MC_MS_SLOW);
-				break;
-			default:
-				break;
-			}
-		}
+	if (htim->Instance == TIM7) {
+		/* Dummy end */
+		atomic_store(&g_request_end, true);
 	}
-	HAL_UART_Receive_IT(&huart2, &uart_data, 1);
 }
+
 /* USER CODE END 0 */
 
 /**
@@ -124,7 +109,11 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-
+  bool check_park_after = false;
+  atomic_store(&g_park_rising_edge_fired, false);
+  atomic_store(&g_request_start, false);
+  atomic_store(&g_request_end, false);
+  enum mc_wipers_state wipers_state = WIPERS_OFF;
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -136,32 +125,72 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_USART2_UART_Init();
-  MX_TIM2_Init();
+  MX_TIM6_Init();
+  MX_TIM7_Init();
   /* USER CODE BEGIN 2 */
-  HAL_UART_Receive_IT(&huart2, &uart_data, 1);
-  HAL_TIM_Base_Start(&htim2);
+  atomic_store(&g_wipers_speed, WIPERS_FAST);
+  atomic_store(&g_request_start, true);
+  HAL_TIM_Base_Start_IT(&htim7);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	enum mc_motor_speed ms = atomic_load(&motor_speed);
-	switch (ms) {
-	case MC_MS_NOTHING:
-		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_RESET);
-	    break;
-	case MC_MS_SLOW:
-		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_SET);
-	    break;
-	case MC_MS_FAST:
-		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_SET);
-		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_RESET);
+	bool stop_motor = false;
+	/* Check the park edge and start a delay timer */
+	if (atomic_load(&g_park_rising_edge_fired) && !check_park_after) {
+		/* Don't clear the park flag, that should be cleared after a small delay (using timers). */
+		check_park_after = true;
+		TIM6->CNT = 0;
+		HAL_TIM_Base_Start(&htim6);
+	}
+	if (check_park_after) {
+		if (TIM6->CNT >= PARK_AFTER_CHECK_TIME) {
+			HAL_TIM_Base_Start(&htim6);
+			check_park_after = false;
+			atomic_store(&g_park_rising_edge_fired, false);
+			/* Check the polarity of the edge */
+			if (HAL_GPIO_ReadPin(PARK_SENSE_PORT, PARK_SENSE_PIN) == GPIO_PIN_SET) {
+				/* This means the motor is parked, signal */
+				stop_motor = true;
+			}
+		}
+	}
+	switch (wipers_state) {
+	case WIPERS_OFF:
+		if (atomic_load(&g_request_start)) {
+			wipers_state = WIPERS_ON;
+			int wiper_speed = atomic_load(&g_wipers_speed);
+			atomic_store(&g_request_start, false);
+			if (wiper_speed == WIPERS_SLOW) {
+				HAL_GPIO_WritePin(FAST_INH_PORT, FAST_INH_PIN, GPIO_PIN_RESET);
+				HAL_GPIO_WritePin(SLOW_INH_PORT, SLOW_INH_PIN, GPIO_PIN_SET);
+				HAL_GPIO_WritePin(SLOW_PWM_PORT, SLOW_PWM_PIN, GPIO_PIN_SET);
+				HAL_GPIO_WritePin(FAST_PWM_PORT, FAST_PWM_PIN, GPIO_PIN_RESET);
+			} else {
+				/* Medium speed still not implemented */
+				HAL_GPIO_WritePin(FAST_INH_PORT, FAST_INH_PIN, GPIO_PIN_SET);
+				HAL_GPIO_WritePin(SLOW_INH_PORT, SLOW_INH_PIN, GPIO_PIN_RESET);
+				HAL_GPIO_WritePin(SLOW_PWM_PORT, SLOW_PWM_PIN, GPIO_PIN_RESET);
+				HAL_GPIO_WritePin(FAST_PWM_PORT, FAST_PWM_PIN, GPIO_PIN_SET);
+			}
+			wipers_state = WIPERS_ON;
+		}
 		break;
-	default:
+	case WIPERS_ON:
+		if (atomic_load(&g_request_end)) {
+			wipers_state = WIPERS_REQUEST_STOP;
+			atomic_store(&g_request_end, false);
+		}
+		break;
+	case WIPERS_REQUEST_STOP:
+		if (stop_motor) {
+			/* Caught stop motor condition, disable everything */
+			HAL_GPIO_WritePin(SLOW_PWM_PORT, SLOW_PWM_PIN, GPIO_PIN_RESET);
+			HAL_GPIO_WritePin(FAST_PWM_PORT, FAST_PWM_PIN, GPIO_PIN_RESET);
+			wipers_state = WIPERS_OFF;
+		}
 		break;
 	}
     /* USER CODE END WHILE */
@@ -213,80 +242,78 @@ void SystemClock_Config(void)
 }
 
 /**
-  * @brief TIM2 Initialization Function
+  * @brief TIM6 Initialization Function
   * @param None
   * @retval None
   */
-static void MX_TIM2_Init(void)
+static void MX_TIM6_Init(void)
 {
 
-  /* USER CODE BEGIN TIM2_Init 0 */
+  /* USER CODE BEGIN TIM6_Init 0 */
 
-  /* USER CODE END TIM2_Init 0 */
+  /* USER CODE END TIM6_Init 0 */
 
-  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
   TIM_MasterConfigTypeDef sMasterConfig = {0};
 
-  /* USER CODE BEGIN TIM2_Init 1 */
+  /* USER CODE BEGIN TIM6_Init 1 */
 
-  /* USER CODE END TIM2_Init 1 */
-  htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 1599;
-  htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 4294967295;
-  htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-  if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-  if (HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig) != HAL_OK)
+  /* USER CODE END TIM6_Init 1 */
+  htim6.Instance = TIM6;
+  htim6.Init.Prescaler = 1599;
+  htim6.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim6.Init.Period = 65535;
+  htim6.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim6) != HAL_OK)
   {
     Error_Handler();
   }
   sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
   sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-  if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim6, &sMasterConfig) != HAL_OK)
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN TIM2_Init 2 */
+  /* USER CODE BEGIN TIM6_Init 2 */
 
-  /* USER CODE END TIM2_Init 2 */
+  /* USER CODE END TIM6_Init 2 */
 
 }
 
 /**
-  * @brief USART2 Initialization Function
+  * @brief TIM7 Initialization Function
   * @param None
   * @retval None
   */
-static void MX_USART2_UART_Init(void)
+static void MX_TIM7_Init(void)
 {
 
-  /* USER CODE BEGIN USART2_Init 0 */
+  /* USER CODE BEGIN TIM7_Init 0 */
 
-  /* USER CODE END USART2_Init 0 */
+  /* USER CODE END TIM7_Init 0 */
 
-  /* USER CODE BEGIN USART2_Init 1 */
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
 
-  /* USER CODE END USART2_Init 1 */
-  huart2.Instance = USART2;
-  huart2.Init.BaudRate = 115200;
-  huart2.Init.WordLength = UART_WORDLENGTH_8B;
-  huart2.Init.StopBits = UART_STOPBITS_1;
-  huart2.Init.Parity = UART_PARITY_NONE;
-  huart2.Init.Mode = UART_MODE_TX_RX;
-  huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  huart2.Init.OverSampling = UART_OVERSAMPLING_16;
-  if (HAL_UART_Init(&huart2) != HAL_OK)
+  /* USER CODE BEGIN TIM7_Init 1 */
+
+  /* USER CODE END TIM7_Init 1 */
+  htim7.Instance = TIM7;
+  htim7.Init.Prescaler = 1599;
+  htim7.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim7.Init.Period = 50000;
+  htim7.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim7) != HAL_OK)
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN USART2_Init 2 */
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim7, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM7_Init 2 */
 
-  /* USER CODE END USART2_Init 2 */
+  /* USER CODE END TIM7_Init 2 */
 
 }
 
@@ -306,24 +333,24 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOA_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0|GPIO_PIN_1, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_2|GPIO_PIN_3|GPIO_PIN_5|GPIO_PIN_6, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : PA0 PA1 */
-  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1;
+  /*Configure GPIO pins : PA2 PA3 PA5 PA6 */
+  GPIO_InitStruct.Pin = GPIO_PIN_2|GPIO_PIN_3|GPIO_PIN_5|GPIO_PIN_6;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PA4 */
-  GPIO_InitStruct.Pin = GPIO_PIN_4;
+  /*Configure GPIO pin : PA8 */
+  GPIO_InitStruct.Pin = GPIO_PIN_8;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
-  HAL_NVIC_SetPriority(EXTI4_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(EXTI4_IRQn);
+  HAL_NVIC_SetPriority(EXTI9_5_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
 
