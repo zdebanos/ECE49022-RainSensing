@@ -23,21 +23,24 @@
 /* USER CODE BEGIN Includes */
 #include <stdatomic.h>
 #include <stdbool.h>
+#include <string.h>
+#include <stdio.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
 enum mc_wipers_state
 {
-	WIPERS_OFF = 0,
+	WIPERS_PARKED = 0,
 	WIPERS_ON,
 	WIPERS_REQUEST_STOP
 };
 
-enum mc_wiper_speed
+enum mc_wipers_speed
 {
-	WIPERS_SLOW = 0,
-	WIPERS_MEDIUM,        /* Not implemented yet */
+	WIPERS_OFF,
+	WIPERS_SLOW,
+	WIPERS_MEDIUM,        /* TODO: Not implemented yet */
 	WIPERS_FAST
 };
 /* USER CODE END PTD */
@@ -45,6 +48,8 @@ enum mc_wiper_speed
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 #define PARK_AFTER_CHECK_TIME ((int)80) /* 8ms */
+#define CAN_RX_STD_ID         0x123U
+#define SW_VERSION            "0.1"
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -53,21 +58,27 @@ enum mc_wiper_speed
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+CAN_HandleTypeDef hcan1;
+
 TIM_HandleTypeDef htim6;
 TIM_HandleTypeDef htim7;
 
+UART_HandleTypeDef huart3;
+
 /* USER CODE BEGIN PV */
 atomic_bool g_park_rising_edge_fired;
-atomic_bool g_request_start;
-atomic_bool g_request_end;
+atomic_bool g_timer_elapsed;
 atomic_int  g_wipers_speed;
+atomic_bool g_timer_slow_period_elapsed;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_TIM6_Init(void);
 static void MX_TIM7_Init(void);
+static void MX_USART3_UART_Init(void);
+static void MX_CAN1_Init(void);
+static void MX_TIM6_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -77,17 +88,64 @@ static void MX_TIM7_Init(void);
 /* User Interrupts */
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
-	if (!atomic_load(&g_park_rising_edge_fired)) {
-		/* Set the flag if the interrupt still hasn't been triggered. */
-		atomic_store(&g_park_rising_edge_fired, true);
-	}
+	atomic_store(&g_park_rising_edge_fired, true);
+	//HAL_UART_Transmit(&huart3, "edge\r\n", 6, 10);
 }
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 	if (htim->Instance == TIM7) {
 		/* Dummy end */
-		atomic_store(&g_request_end, true);
+		//HAL_UART_Transmit(&huart3, "timer\r\n", 7, 10);
+		atomic_store(&g_timer_elapsed, true);
+	} else if (htim->Instance == TIM6) {
+		HAL_UART_Transmit(&huart3, "timer6\r\n", 8, 10);
+		atomic_store(&g_timer_slow_period_elapsed, true);
+		HAL_TIM_Base_Stop_IT(&htim6);
+	}
+}
+
+void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
+{
+    if (hcan->Instance != CAN1)
+    	return;
+
+    CAN_RxHeaderTypeDef RxHeader;
+    uint8_t RxData[8] = {0};
+
+    if (HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &RxHeader, RxData) != HAL_OK)
+        return;
+
+    /* Byte 0 = speed (0-3), clamp to valid range */
+    uint8_t raw_speed = RxData[0];
+    if (raw_speed > 3) {
+    	raw_speed = 3;
+    }
+
+    atomic_store(&g_wipers_speed, raw_speed);
+    /*char dbg[30];
+    int len = sprintf(dbg, "CAN %d\r\n", raw_speed);
+    HAL_UART_Transmit(&huart3, dbg, len, 10);*/
+}
+
+void wipers_set_speed(enum mc_wipers_speed speed)
+{
+	switch (speed) {
+	case WIPERS_SLOW:
+	case WIPERS_MEDIUM:
+		HAL_GPIO_WritePin(FAST_INH_PORT, FAST_INH_PIN, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(SLOW_INH_PORT, SLOW_INH_PIN, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(SLOW_PWM_PORT, SLOW_PWM_PIN, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(FAST_PWM_PORT, FAST_PWM_PIN, GPIO_PIN_RESET);
+		break;
+	case WIPERS_FAST:
+		HAL_GPIO_WritePin(FAST_INH_PORT, FAST_INH_PIN, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(SLOW_INH_PORT, SLOW_INH_PIN, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(SLOW_PWM_PORT, SLOW_PWM_PIN, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(FAST_PWM_PORT, FAST_PWM_PIN, GPIO_PIN_SET);
+		break;
+	default: /* Ignore OFF */
+		break;
 	}
 }
 
@@ -111,9 +169,11 @@ int main(void)
   /* USER CODE BEGIN Init */
   bool check_park_after = false;
   atomic_store(&g_park_rising_edge_fired, false);
-  atomic_store(&g_request_start, false);
-  atomic_store(&g_request_end, false);
-  enum mc_wipers_state wipers_state = WIPERS_OFF;
+  atomic_store(&g_timer_elapsed, false);
+  atomic_store(&g_timer_slow_period_elapsed, false);
+  enum mc_wipers_state wipers_state = WIPERS_PARKED;
+  atomic_store(&g_wipers_speed, WIPERS_OFF);
+  const char *fw_hello = "[MockCar] FW Version " SW_VERSION "\r\n";
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -125,71 +185,122 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_TIM6_Init();
   MX_TIM7_Init();
+  MX_USART3_UART_Init();
+  MX_CAN1_Init();
+  MX_TIM6_Init();
   /* USER CODE BEGIN 2 */
-  atomic_store(&g_wipers_speed, WIPERS_FAST);
-  atomic_store(&g_request_start, true);
-  HAL_TIM_Base_Start_IT(&htim7);
+
+  CAN_FilterTypeDef filter = {0};
+  filter.FilterBank           = 0;
+  filter.FilterMode           = CAN_FILTERMODE_IDMASK;      /* exact ID match */
+  filter.FilterScale          = CAN_FILTERSCALE_32BIT;
+  filter.FilterIdHigh         = CAN_RX_STD_ID << 5;        /* StdId in [15:5] */
+  filter.FilterIdLow          = 0x0000;
+  filter.FilterMaskIdHigh     = 0x0000;
+  filter.FilterMaskIdLow      = 0x0000;
+  filter.FilterFIFOAssignment = CAN_RX_FIFO0;
+  filter.FilterActivation     = ENABLE;
+  filter.SlaveStartFilterBank = 14;
+  HAL_CAN_ConfigFilter(&hcan1, &filter);
+
+  HAL_CAN_Start(&hcan1);
+  /* Enable FIFO0 message-pending interrupt */
+  HAL_CAN_ActivateNotification(&hcan1, CAN_IT_RX_FIFO0_MSG_PENDING);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  HAL_UART_Transmit(&huart3, (const uint8_t*) fw_hello, strlen(fw_hello), 10);
+
+  int loop_cnt = 0;
+  bool slow_wait_active = false;
+  bool _true = true;
+  bool _false = false;
   while (1)
   {
+	if (loop_cnt++ == 100000) {
+		HAL_UART_Transmit(&huart3, (const uint8_t*) "LOOP ALIVE\r\n", 12, 10);
+		loop_cnt = 0;
+	}
 	bool stop_motor = false;
+	_true = true;
+	_false = false;
+
+	enum mc_wipers_speed wipers_speed = atomic_load(&g_wipers_speed);
 	/* Check the park edge and start a delay timer */
 	if (atomic_load(&g_park_rising_edge_fired) && !check_park_after) {
-		/* Don't clear the park flag, that should be cleared after a small delay (using timers). */
+		/* Don't clear the park flag, that should be cleared after a small delay after debouncing (using timers). */
+		HAL_TIM_Base_Stop(&htim7);
 		check_park_after = true;
-		TIM6->CNT = 0;
-		HAL_TIM_Base_Start(&htim6);
+		TIM7->CNT = 0;
+		HAL_TIM_Base_Start_IT(&htim7);
+		atomic_store(&g_park_rising_edge_fired, false);
 	}
 	if (check_park_after) {
-		if (TIM6->CNT >= PARK_AFTER_CHECK_TIME) {
-			HAL_TIM_Base_Start(&htim6);
+		if (atomic_load(&g_timer_elapsed)) {
+			atomic_store(&g_timer_elapsed, false);
+			HAL_TIM_Base_Stop(&htim7);
 			check_park_after = false;
-			atomic_store(&g_park_rising_edge_fired, false);
 			/* Check the polarity of the edge */
 			if (HAL_GPIO_ReadPin(PARK_SENSE_PORT, PARK_SENSE_PIN) == GPIO_PIN_SET) {
-				/* This means the motor is parked, signal */
-				stop_motor = true;
+				/* This means the motor is parked in the park position. However,
+				 * stop the motor if it's requested, otherwise not.
+				 */
+				if (wipers_speed == WIPERS_OFF || wipers_speed == WIPERS_SLOW) {
+					stop_motor = true;
+				}
 			}
 		}
 	}
+
+
+	if (atomic_compare_exchange_strong(&g_timer_slow_period_elapsed, &_true, false)) {
+		HAL_UART_Transmit(&huart3, "SET\r\n", 5, 10);
+		slow_wait_active = false;
+	}
+
 	switch (wipers_state) {
-	case WIPERS_OFF:
-		if (atomic_load(&g_request_start)) {
+	case WIPERS_PARKED:
+		/* If the wipers are parked and there's request to turn on the wipers, start it.
+		 * However, if are waiting for the SLOW period timer to finish, stay here */
+		if (wipers_speed == WIPERS_OFF) {
+			/* In case we go from the OFF state to SLOW, we need to disable the slow wait active */
+			slow_wait_active = false;
+		} else if (wipers_speed > WIPERS_SLOW) {
 			wipers_state = WIPERS_ON;
-			int wiper_speed = atomic_load(&g_wipers_speed);
-			atomic_store(&g_request_start, false);
-			if (wiper_speed == WIPERS_SLOW) {
-				HAL_GPIO_WritePin(FAST_INH_PORT, FAST_INH_PIN, GPIO_PIN_RESET);
-				HAL_GPIO_WritePin(SLOW_INH_PORT, SLOW_INH_PIN, GPIO_PIN_SET);
-				HAL_GPIO_WritePin(SLOW_PWM_PORT, SLOW_PWM_PIN, GPIO_PIN_SET);
-				HAL_GPIO_WritePin(FAST_PWM_PORT, FAST_PWM_PIN, GPIO_PIN_RESET);
-			} else {
-				/* Medium speed still not implemented */
-				HAL_GPIO_WritePin(FAST_INH_PORT, FAST_INH_PIN, GPIO_PIN_SET);
-				HAL_GPIO_WritePin(SLOW_INH_PORT, SLOW_INH_PIN, GPIO_PIN_RESET);
-				HAL_GPIO_WritePin(SLOW_PWM_PORT, SLOW_PWM_PIN, GPIO_PIN_RESET);
-				HAL_GPIO_WritePin(FAST_PWM_PORT, FAST_PWM_PIN, GPIO_PIN_SET);
-			}
-			wipers_state = WIPERS_ON;
+			wipers_set_speed(wipers_speed);
+		} else if (wipers_speed == WIPERS_SLOW && !slow_wait_active) {
+			HAL_UART_Transmit(&huart3,  "Going to STOP\r\n", 16, 10);
+			wipers_state = WIPERS_REQUEST_STOP;
+			wipers_set_speed(WIPERS_SLOW);
+			slow_wait_active = true;
 		}
 		break;
 	case WIPERS_ON:
-		if (atomic_load(&g_request_end)) {
+		wipers_set_speed(wipers_speed);
+		if (wipers_speed == WIPERS_OFF || wipers_speed == WIPERS_SLOW) {
 			wipers_state = WIPERS_REQUEST_STOP;
-			atomic_store(&g_request_end, false);
 		}
 		break;
 	case WIPERS_REQUEST_STOP:
-		if (stop_motor) {
-			/* Caught stop motor condition, disable everything */
-			HAL_GPIO_WritePin(SLOW_PWM_PORT, SLOW_PWM_PIN, GPIO_PIN_RESET);
-			HAL_GPIO_WritePin(FAST_PWM_PORT, FAST_PWM_PIN, GPIO_PIN_RESET);
-			wipers_state = WIPERS_OFF;
+		/* If by any change a request to launch is received again, go back to the WIPERS_ON state */
+		if (wipers_speed > WIPERS_SLOW) {
+			wipers_state = WIPERS_ON;
+		} else {
+			if (stop_motor) {
+				/* Caught stop motor condition, disable everything */
+				HAL_GPIO_WritePin(SLOW_PWM_PORT, SLOW_PWM_PIN, GPIO_PIN_RESET);
+				HAL_GPIO_WritePin(FAST_PWM_PORT, FAST_PWM_PIN, GPIO_PIN_RESET);
+				wipers_state = WIPERS_PARKED;
+				if (wipers_speed == WIPERS_SLOW) {
+					/* Start the countdown slow timer */
+					HAL_TIM_Base_Stop(&htim6);
+					TIM6->CNT = 0;
+					HAL_TIM_Base_Start_IT(&htim6);
+					slow_wait_active = true;
+				}
+			}
 		}
 		break;
 	}
@@ -242,6 +353,43 @@ void SystemClock_Config(void)
 }
 
 /**
+  * @brief CAN1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_CAN1_Init(void)
+{
+
+  /* USER CODE BEGIN CAN1_Init 0 */
+
+  /* USER CODE END CAN1_Init 0 */
+
+  /* USER CODE BEGIN CAN1_Init 1 */
+
+  /* USER CODE END CAN1_Init 1 */
+  hcan1.Instance = CAN1;
+  hcan1.Init.Prescaler = 9;
+  hcan1.Init.Mode = CAN_MODE_NORMAL;
+  hcan1.Init.SyncJumpWidth = CAN_SJW_1TQ;
+  hcan1.Init.TimeSeg1 = CAN_BS1_13TQ;
+  hcan1.Init.TimeSeg2 = CAN_BS2_2TQ;
+  hcan1.Init.TimeTriggeredMode = DISABLE;
+  hcan1.Init.AutoBusOff = DISABLE;
+  hcan1.Init.AutoWakeUp = DISABLE;
+  hcan1.Init.AutoRetransmission = DISABLE;
+  hcan1.Init.ReceiveFifoLocked = DISABLE;
+  hcan1.Init.TransmitFifoPriority = DISABLE;
+  if (HAL_CAN_Init(&hcan1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN CAN1_Init 2 */
+
+  /* USER CODE END CAN1_Init 2 */
+
+}
+
+/**
   * @brief TIM6 Initialization Function
   * @param None
   * @retval None
@@ -261,7 +409,7 @@ static void MX_TIM6_Init(void)
   htim6.Instance = TIM6;
   htim6.Init.Prescaler = 1599;
   htim6.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim6.Init.Period = 65535;
+  htim6.Init.Period = 10000;
   htim6.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim6) != HAL_OK)
   {
@@ -299,7 +447,7 @@ static void MX_TIM7_Init(void)
   htim7.Instance = TIM7;
   htim7.Init.Prescaler = 1599;
   htim7.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim7.Init.Period = 50000;
+  htim7.Init.Period = 80;
   htim7.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim7) != HAL_OK)
   {
@@ -318,6 +466,39 @@ static void MX_TIM7_Init(void)
 }
 
 /**
+  * @brief USART3 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART3_UART_Init(void)
+{
+
+  /* USER CODE BEGIN USART3_Init 0 */
+
+  /* USER CODE END USART3_Init 0 */
+
+  /* USER CODE BEGIN USART3_Init 1 */
+
+  /* USER CODE END USART3_Init 1 */
+  huart3.Instance = USART3;
+  huart3.Init.BaudRate = 115200;
+  huart3.Init.WordLength = UART_WORDLENGTH_8B;
+  huart3.Init.StopBits = UART_STOPBITS_1;
+  huart3.Init.Parity = UART_PARITY_NONE;
+  huart3.Init.Mode = UART_MODE_TX_RX;
+  huart3.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart3.Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_UART_Init(&huart3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN USART3_Init 2 */
+
+  /* USER CODE END USART3_Init 2 */
+
+}
+
+/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
@@ -331,6 +512,7 @@ static void MX_GPIO_Init(void)
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOC_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_2|GPIO_PIN_3|GPIO_PIN_5|GPIO_PIN_6, GPIO_PIN_RESET);
